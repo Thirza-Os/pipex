@@ -10,9 +10,10 @@
 
 typedef struct s_vars
 {
+	int		fd[2];
+	char	*cmd[2];
 	pid_t	child[2];
 	int		pipe_end[2];
-	int		fd[2];
 	char	**paths;
 }	t_vars;
 
