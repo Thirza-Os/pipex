@@ -1,7 +1,9 @@
 NAME 			= pipex
 
-SRCS 			= main.c \
-				  utils.c
+SRCS 			=	main.c 			\
+					utils.c			\
+					ft_split.c		\
+					utils_split.c
 
 # CFLAGS 			= -Wall -Wextra -Werror
 CC				= gcc
