@@ -11,9 +11,11 @@
 typedef struct s_vars
 {
 	int		fd[2];
-	char	*cmd[2];
 	pid_t	child[2];
 	int		pipe_end[2];
+	char	*cmd[2];
+	char	**cmd_one;
+	char	**cmd_two;
 	char	**paths;
 }	t_vars;
 
@@ -24,5 +26,6 @@ void			fork_error(void);
 char			**ft_split(char const *s, char c);
 char			**ft_free(char **arr);
 char			*ft_strdup(const char *s1);
+char			*ft_strjoin(char const *s1, char const *s2);
 
 #endif
