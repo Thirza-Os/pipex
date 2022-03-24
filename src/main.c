@@ -1,36 +1,44 @@
 # include "pipex.h"
 
-static void child_two(t_vars *vars, char **envp)
+static	char	*check_cmd(t_vars *vars, char *cmd)
 {
-	char	*cmd_total;
+	char	*cmd_tot;
 	int		i;
 
 	i = 0;
-	if (dup2(vars->pipe_end[0], STDOUT_FILENO) < 0)
+	while (vars->paths[i])
+	{
+		cmd_tot = ft_strjoin(vars->paths[i], cmd);
+		printf("This string: %s", cmd_tot);
+		if (access(cmd_tot, 0) == 0)
+			return (cmd_tot);
+		free(cmd_tot);
+		i++;
+	}
+	write(1, "HEH\n", 4);
+	perror("Could not retrieve path\n");
+	exit (1);
+}
+
+static void	child_two(t_vars *vars, char **envp)
+{
+	char	*cmd_total;
+
+	if (dup2(vars->fd[1], 0) < 0)
 	{
 		perror("Duplication failed\n");
+		exit(1);
+	}
+	if (dup2(vars->pipe_end[0], 1) < 0)
+	{
+		perror("Duplication failed?\n");
 		exit(1);
 	}
 	close(vars->pipe_end[1]);
-	if (dup2(vars->fd[1], STDIN_FILENO) < 0)
-	{
-		perror("Duplication failed\n");
-		exit(1);
-	}
 	close(vars->fd[1]);
-	while (vars->paths[i])
-	{
-		cmd_total = ft_strjoin(vars->paths[i], vars->cmd[1]);
-		if (cmd_total == NULL)
-			exit (1);
-		if (execve(cmd_total, vars->paths, envp) < 0)
-		{
-			perror("Invalid command\n");
-			exit(1);
-		}
-		free(cmd_total);
-	i++;
-	}
+	cmd_total = check_cmd(vars, vars->cmd[1]);
+	printf("This string: %s", cmd_total);
+	execve(cmd_total, vars->paths, envp);
 	//exit
 }
 
@@ -52,20 +60,9 @@ static void	child_one(t_vars *vars, char **envp)
 		exit(1);
 	}
 	close(vars->fd[0]);
-	printf("\nThis string\n");
-	while (vars->paths[i])
-	{
-		cmd_total = ft_strjoin(vars->paths[i], vars->cmd[0]);
-		if (cmd_total == NULL)
-			exit (1);
-		if (execve(cmd_total, vars->paths, envp) < 0)
-		{
-			perror("Invalid command\n");
-			exit(1);
-		}
-		free(cmd_total);
-	i++;
-	}
+	cmd_total = check_cmd(vars, vars->cmd[0]);
+	printf("This string: %s", cmd_total);
+	execve(cmd_total, vars->paths, envp);
 }
 
 static int	pipex(t_vars *vars, char **envp)
@@ -92,23 +89,6 @@ static int	pipex(t_vars *vars, char **envp)
 	return (0);
 }
 
-static void	envp_paths(t_vars *vars, char **envp)
-{
-	int		i;
-	char	*start;
-	int		len;
-
-	i = 0;
-	start = NULL;
-	while (envp[i] && start == NULL)
-	{
-		len = ft_strlen(envp[i]);
-		start = ft_strnstr_last(envp[i], "PATH=", len);
-		i++;
-	}
-	vars->paths = ft_split(start, ':');
-}
-
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_vars	vars;
@@ -120,8 +100,7 @@ int	main(int argc, char *argv[], char *envp[])
 	}
 	vars.cmd[0] = argv[2];
 	vars.cmd[1] = argv[3];
-	vars.cmd_one = ft_split(argv[2], ' ');
-	vars.cmd_two = ft_split(argv[3], ' ');
+	vars.cmd[2] = NULL;
 	vars.fd[0] = open(argv[1], O_RDONLY);
 	if (vars.fd[0] < 0)
 	{
@@ -136,8 +115,6 @@ int	main(int argc, char *argv[], char *envp[])
 	}
 	envp_paths(&vars, envp);
 	pipex(&vars, envp);
-	// cmd1 = argv[2];
-	// cmd2 = argv[3];
-	// pipex(fd1, fd2, cmd1, cmd2, envp);
+	ft_free(vars.paths);
 	return (0);
 }

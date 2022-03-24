@@ -68,3 +68,20 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	str[a] = '\0';
 	return (str);
 }
+
+void envp_paths(t_vars *vars, char **envp)
+{
+	int		i;
+	char	*start;
+	int		len;
+
+	i = 0;
+	start = NULL;
+	while (envp[i] && start == NULL)
+	{
+		len = ft_strlen(envp[i]);
+		start = ft_strnstr_last(envp[i], "PATH=", len);
+		i++;
+	}
+	vars->paths = ft_split_add_slash(start, ':');
+}
