@@ -8,6 +8,12 @@
 # include <signal.h>
 # include <fcntl.h>
 
+# define PIPE_OUT_WRITE 1
+# define PIPE_IN_READ 0
+
+# define FILE_OUT 1
+# define FILE_IN 0
+
 typedef struct s_vars
 {
 	int		fd[2];

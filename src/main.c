@@ -22,22 +22,21 @@ static void	child_two(t_vars *vars, char **envp)
 {
 	char	*cmd_total;
 
-	if (dup2(vars->fd[1], 0) < 0)
-	{
-		perror("Duplication failed\n");
-		exit(1);
-	}
-	if (dup2(vars->pipe_end[0], 1) < 0)
+	close(vars->pipe_end[PIPE_OUT_WRITE]);
+	if (dup2(vars->pipe_end[PIPE_IN_READ], STDIN_FILENO) < 0)
 	{
 		perror("Duplication failed?\n");
 		exit(1);
 	}
-	close(vars->pipe_end[1]);
-	close(vars->fd[1]);
+	close(vars->pipe_end[PIPE_IN_READ]);
+	if (dup2(vars->fd[FILE_OUT], STDOUT_FILENO) < 0)
+	{
+		perror("Duplication failed\n");
+		exit(1);
+	}
+	close(vars->fd[FILE_OUT]);
 	cmd_total = check_cmd(vars, vars->cmd_two[0]);
-	printf("This string: %s", cmd_total);
-	execve(cmd_total, vars->paths, envp);
-	// exit
+	execve(cmd_total, vars->cmd_two, envp);
 }
 
 static void	child_one(t_vars *vars, char **envp)
@@ -46,21 +45,21 @@ static void	child_one(t_vars *vars, char **envp)
 	int		i;
 
 	i = 0;
-	if (dup2(vars->pipe_end[1], 1) < 0)
+	close(vars->pipe_end[PIPE_IN_READ]);
+	if (dup2(vars->pipe_end[PIPE_OUT_WRITE], STDOUT_FILENO) < 0)
 	{
 		perror("Duplication failed\n");
 		exit(1);
 	}
-	close(vars->pipe_end[0]);
-	if (dup2(vars->fd[0], 0) < 0)
+	close(vars->pipe_end[PIPE_OUT_WRITE]);
+	if (dup2(vars->fd[FILE_IN], STDIN_FILENO) < 0)
 	{
 		perror("Duplication failed\n");
 		exit(1);
 	}
-	close(vars->fd[0]);
+	close(vars->fd[FILE_IN]);
 	cmd_total = check_cmd(vars, vars->cmd_one[0]);
-	printf("\nThis string finally: %s", cmd_total);
-	execve(cmd_total, vars->paths, envp);
+	execve(cmd_total, vars->cmd_one, envp);
 }
 
 static int	pipex(t_vars *vars, char **envp)
@@ -80,8 +79,8 @@ static int	pipex(t_vars *vars, char **envp)
 		fork_error();
 	if (vars->child[1] == 0)
 		child_two(vars, envp);
-	close(vars->pipe_end[0]);
-	close(vars->pipe_end[1]);
+	close(vars->pipe_end[PIPE_IN_READ]);
+	close(vars->pipe_end[PIPE_OUT_WRITE]);
 	waitpid(vars->child[0], NULL, 0);
 	waitpid(vars->child[1], NULL, 0);
 	return (0);
@@ -101,13 +100,13 @@ int	main(int argc, char *argv[], char *envp[])
 	vars.cmd[2] = NULL;
 	vars.cmd_one = ft_split(argv[2], ' ');
 	vars.cmd_two = ft_split(argv[3], ' ');
-	vars.fd[0] = open(argv[1], O_RDONLY);
+	vars.fd[FILE_IN] = open(argv[1], O_RDONLY);
 	if (vars.fd[0] < 0)
 	{
 		perror("Failed to open file\n");
 		exit(1);
 	}
-	vars.fd[1] = open(argv[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
+	vars.fd[FILE_OUT] = open(argv[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (vars.fd[1] < 0)
 	{
 		perror("Failed to open file\n");
