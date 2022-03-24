@@ -14,6 +14,8 @@ typedef struct s_vars
 	pid_t	child[2];
 	int		pipe_end[2];
 	char	*cmd[3];
+	char	**cmd_one;
+	char	**cmd_two;
 	char	**paths;
 }	t_vars;
 

@@ -69,7 +69,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	return (str);
 }
 
-void envp_paths(t_vars *vars, char **envp)
+void	envp_paths(t_vars *vars, char **envp)
 {
 	int		i;
 	char	*start;

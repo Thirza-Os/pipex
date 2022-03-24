@@ -9,13 +9,11 @@ static	char	*check_cmd(t_vars *vars, char *cmd)
 	while (vars->paths[i])
 	{
 		cmd_tot = ft_strjoin(vars->paths[i], cmd);
-		printf("This string: %s", cmd_tot);
 		if (access(cmd_tot, 0) == 0)
 			return (cmd_tot);
 		free(cmd_tot);
 		i++;
 	}
-	write(1, "HEH\n", 4);
 	perror("Could not retrieve path\n");
 	exit (1);
 }
@@ -36,10 +34,10 @@ static void	child_two(t_vars *vars, char **envp)
 	}
 	close(vars->pipe_end[1]);
 	close(vars->fd[1]);
-	cmd_total = check_cmd(vars, vars->cmd[1]);
+	cmd_total = check_cmd(vars, vars->cmd_two[0]);
 	printf("This string: %s", cmd_total);
 	execve(cmd_total, vars->paths, envp);
-	//exit
+	// exit
 }
 
 static void	child_one(t_vars *vars, char **envp)
@@ -60,8 +58,8 @@ static void	child_one(t_vars *vars, char **envp)
 		exit(1);
 	}
 	close(vars->fd[0]);
-	cmd_total = check_cmd(vars, vars->cmd[0]);
-	printf("This string: %s", cmd_total);
+	cmd_total = check_cmd(vars, vars->cmd_one[0]);
+	printf("\nThis string finally: %s", cmd_total);
 	execve(cmd_total, vars->paths, envp);
 }
 
@@ -101,6 +99,8 @@ int	main(int argc, char *argv[], char *envp[])
 	vars.cmd[0] = argv[2];
 	vars.cmd[1] = argv[3];
 	vars.cmd[2] = NULL;
+	vars.cmd_one = ft_split(argv[2], ' ');
+	vars.cmd_two = ft_split(argv[3], ' ');
 	vars.fd[0] = open(argv[1], O_RDONLY);
 	if (vars.fd[0] < 0)
 	{
