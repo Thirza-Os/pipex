@@ -6,7 +6,7 @@ SRCS 			=	main.c 			\
 					ft_split_add.c	\
 					utils_split.c	
 
-CFLAGS 			= -Wall -Wextra -Werror
+CFLAGS 			= -Wall -Wextra -Werror -fsanitize=address -g
 CC				= gcc
 HEADER 			= pipex.h
 
